@@ -5,7 +5,7 @@ public class ProcessedPeopleObserver implements Observer {
     private int processed;
 
     public void increase(int value) {
-        processed += value;
+        this.processed += value;
     }
 
     @Override

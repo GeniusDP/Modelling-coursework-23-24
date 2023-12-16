@@ -15,15 +15,18 @@ import lombok.Setter;
 public class Lifting implements Element {
 
     @Setter(AccessLevel.NONE)
-    private int number;
+    private int startFloorNumber;
+    @Setter(AccessLevel.NONE)
+    private int destinationFloorNumber;
     private int timeNext;
     private Floor destinationFloor;
     private Lifting nextLifting;
     private List<Person> peopleOnBoard;
     private List<Person> queue;
 
-    public Lifting(int number) {
-        this.number = number;
+    public Lifting(int startFloorNumber, int destinationFloorNumber) {
+        this.startFloorNumber = startFloorNumber;
+        this.destinationFloorNumber = destinationFloorNumber;
         this.peopleOnBoard = new ArrayList<>();
         this.queue = new ArrayList<>();
         this.timeNext = INF_TIME;

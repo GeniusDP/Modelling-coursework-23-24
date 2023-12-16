@@ -27,10 +27,9 @@ public class Modeller {
                 .map(Element::getTimeNext)
                 .min(Comparator.naturalOrder())
                 .orElseThrow(IllegalStateException::new);
-            System.out.println("minimalTimeNext = " + minimalTimeNext);
             TimeHolder.setTime(minimalTimeNext);
 
-            if (cnt == 10000) {
+            if (cnt == 1000) {
                 System.out.println("cnt = " + cnt);
             }
             // execute tasks for time now

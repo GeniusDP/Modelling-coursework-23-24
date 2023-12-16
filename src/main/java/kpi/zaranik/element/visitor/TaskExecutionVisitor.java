@@ -22,6 +22,7 @@ import lombok.RequiredArgsConstructor;
 public class TaskExecutionVisitor implements Visitor {
 
     private final ProcessedPeopleObserver processedPeopleObserver;
+    private final List<Lifting> allLiftings;
 
     @Override
     public void visitGenerator(Generator generator) {
@@ -35,7 +36,12 @@ public class TaskExecutionVisitor implements Visitor {
         if (LiftState.WAITING) {
             LiftState.WAITING = false;
             firstLifting.setTimeNext(TimeHolder.now() + 1);
+            System.out.println("STARTED WAITING LIFT AGAIN");
         }
+        if (firstLifting.getQueue().size() > 50) {
+            System.out.print("");
+        }
+        System.out.println("generated new person: lift12 contains " + firstLifting.getQueue().size());
     }
 
     @Override
@@ -43,17 +49,18 @@ public class TaskExecutionVisitor implements Visitor {
         int currFloorNumber = floor.getNumber();
 
         Set<Person> peopleOnFloor = floor.getPeople();
-        if (currFloorNumber == 1) {
-            int processed = floor.getPeople().size();
-            floor.getPeople().clear();
-            processedPeopleObserver.increase(processed);
-            return;
-        }
 
         List<Person> finishedWork = peopleOnFloor.stream()
             .filter(p -> p.getFinishWorkOnFloorTime() == TimeHolder.now())
             .toList();
         finishedWork.forEach(peopleOnFloor::remove);
+
+        if (!finishedWork.isEmpty() && LiftState.WAITING) {
+            LiftState.WAITING = false;
+            Lifting firstLifting = allLiftings.stream().filter(l -> l.getStartFloorNumber() == 1).findFirst().orElseThrow();
+            firstLifting.setTimeNext(TimeHolder.now() + 1);
+            System.out.println("STARTED WAITING LIFT AGAIN");
+        }
 
         // move all to lifting stage/lifting queue
         finishedWork.forEach(person -> {
@@ -76,38 +83,69 @@ public class TaskExecutionVisitor implements Visitor {
         Floor currentFloor = lifting.getDestinationFloor();
 
         List<Person> peopleOnBoard = lifting.getPeopleOnBoard();
-        lifting.setPeopleOnBoard(new ArrayList<>());
 
         List<Person> goOutHere = peopleOnBoard.stream()
             .filter(p -> p.getDestinationFloorNumber() == currentFloor.getNumber())
             .toList();
         peopleOnBoard.removeAll(goOutHere);
-        goOutHere.forEach(p -> p.setFinishWorkOnFloorTime(getFinishWorkOnFloorTime()));
+        if (currentFloor.getNumber() != 1) {
+            goOutHere.forEach(p -> p.setFinishWorkOnFloorTime(getFinishWorkOnFloorTime()));
+            currentFloor.getPeople().addAll(goOutHere);
+        } else {
+            processedPeopleObserver.increase(goOutHere.size());
+        }
 
-        currentFloor.getPeople().addAll(goOutHere);
+        Lifting nextLifting = getNextLifting(lifting);
+        if (nextLifting != null) {
+            int freePlaces = LIFT_CAPACITY - peopleOnBoard.size();
+            List<Person> fromQueue = nextLifting.getQueue().stream().limit(freePlaces).toList();
+            nextLifting.getQueue().removeAll(fromQueue);
 
+            peopleOnBoard.addAll(fromQueue);
 
-        int freePlaces = LIFT_CAPACITY - peopleOnBoard.size();
+            nextLifting.setPeopleOnBoard(peopleOnBoard);
+            nextLifting.setTimeNext(TimeHolder.now() + 15);
+        }
+        lifting.setPeopleOnBoard(new ArrayList<>());
+    }
 
-        Lifting nextLifting = switch (currentFloor.getNumber()) {
-            case 1 -> currentFloor.getLiftingToNextFloor();
-            case 5 -> currentFloor.getLiftingToPrevFloor();
-            default -> {
-                double random = Math.random();
-                if (random < 0.5) {
-                    yield currentFloor.getLiftingToNextFloor();
-                } else {
-                    yield currentFloor.getLiftingToPrevFloor();
-                }
+    private Lifting getNextLifting(Lifting liftingJustFinished) {
+        List<Person> peopleOnBoard = liftingJustFinished.getPeopleOnBoard();
+        if (!peopleOnBoard.isEmpty()) {
+            return liftingJustFinished.getNextLifting();
+        }
+
+        Floor currentFloor = liftingJustFinished.getDestinationFloor();
+        // on current floor QUEUE UP exists
+        Lifting liftingToNextFloor = currentFloor.getLiftingToNextFloor();
+        if (liftingToNextFloor != null && !liftingToNextFloor.getQueue().isEmpty()) {
+            return liftingToNextFloor;
+        }
+        // on current floor QUEUE DOWN exists
+        Lifting liftingToPrevFloor = currentFloor.getLiftingToPrevFloor();
+        if (liftingToPrevFloor != null && !liftingToPrevFloor.getQueue().isEmpty()) {
+            return liftingToPrevFloor;
+        }
+
+        // people on FLOOR UPPER are WAITING
+        for (Lifting lifting : allLiftings) {
+            if (lifting != liftingJustFinished && lifting.getStartFloorNumber() > currentFloor.getNumber() && !lifting.getQueue().isEmpty()) {
+                return liftingToNextFloor;
             }
-        };
-        List<Person> fromQueue = nextLifting.getQueue().stream().limit(freePlaces).toList();
-        nextLifting.getQueue().removeAll(fromQueue);
+        }
+        // people on FLOOR LOWER are WAITING
+        for (Lifting lifting : allLiftings) {
+            if (lifting != liftingJustFinished && lifting.getStartFloorNumber() < currentFloor.getNumber() && !lifting.getQueue().isEmpty()) {
+                return liftingToPrevFloor;
+            }
+        }
 
-        peopleOnBoard.addAll(fromQueue);
-
-        nextLifting.setPeopleOnBoard(peopleOnBoard);
-        nextLifting.setTimeNext(TimeHolder.now() + 15);
+        if (currentFloor.getNumber() == 1) {
+            LiftState.WAITING = true;
+            System.out.println("Lift now in a WAITING state");
+            return null;
+        }
+        return liftingToPrevFloor;
     }
 
     private int getFinishWorkOnFloorTime() {

@@ -19,9 +19,11 @@ public class Main {
             List.of(processedPeopleObserver)
         );
 
-        var visitor = new TaskExecutionVisitor(processedPeopleObserver);
-
         List<Element> elements = initElements();
+        List<Lifting> liftings = elements.stream().filter(e -> e instanceof Lifting).map(Lifting.class::cast).toList();
+        var visitor = new TaskExecutionVisitor(processedPeopleObserver, liftings);
+
+
         int totalModellingTime = 100_000;
         var modeller = new Modeller(totalModellingTime, elements, visitor);
         modeller.simulate();
@@ -30,14 +32,14 @@ public class Main {
     }
 
     private static List<Element> initElements() {
-        var lift12 = new Lifting(12);
-        var lift21 = new Lifting(21);
-        var lift23 = new Lifting(23);
-        var lift32 = new Lifting(32);
-        var lift34 = new Lifting(34);
-        var lift43 = new Lifting(43);
-        var lift45 = new Lifting(45);
-        var lift54 = new Lifting(54);
+        var lift12 = new Lifting(1, 2);
+        var lift21 = new Lifting(2, 1);
+        var lift23 = new Lifting(2, 3);
+        var lift32 = new Lifting(3, 2);
+        var lift34 = new Lifting(3, 4);
+        var lift43 = new Lifting(4, 3);
+        var lift45 = new Lifting(4, 5);
+        var lift54 = new Lifting(5, 4);
 
         var floor1 = new Floor(1);
         var floor2 = new Floor(2);
@@ -75,6 +77,19 @@ public class Main {
 
         lift45.setDestinationFloor(floor5);
         lift54.setDestinationFloor(floor4);
+
+        //lift.nextLifting
+        lift12.setNextLifting(lift23);
+        lift21.setNextLifting(null);
+
+        lift23.setNextLifting(lift34);
+        lift32.setNextLifting(lift21);
+
+        lift34.setNextLifting(lift45);
+        lift43.setNextLifting(lift32);
+
+        lift45.setNextLifting(null);
+        lift54.setNextLifting(lift43);
 
         return new ArrayList<>(List.of(
             generator, floor1, floor2, floor3, floor4, floor5,
