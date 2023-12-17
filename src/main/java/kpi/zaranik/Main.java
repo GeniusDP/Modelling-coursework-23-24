@@ -28,6 +28,8 @@ public class Main {
         var modeller = new Modeller(totalModellingTime, elements, visitor);
         modeller.simulate();
 
+        Generator generator = elements.stream().filter(e -> e instanceof Generator).map(Generator.class::cast).findFirst().get();
+        System.out.println("Generated: " + generator.count);
         observers.forEach(Observer::printResult);
     }
 

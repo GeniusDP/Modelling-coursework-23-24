@@ -36,10 +36,6 @@ public class TaskExecutionVisitor implements Visitor {
         if (LiftState.WAITING) {
             LiftState.WAITING = false;
             firstLifting.setTimeNext(TimeHolder.now() + 1);
-            System.out.println("STARTED WAITING LIFT AGAIN");
-        }
-        if (firstLifting.getQueue().size() > 50) {
-            System.out.print("");
         }
         System.out.println("generated new person: lift12 contains " + firstLifting.getQueue().size());
     }
@@ -59,7 +55,6 @@ public class TaskExecutionVisitor implements Visitor {
             LiftState.WAITING = false;
             Lifting firstLifting = allLiftings.stream().filter(l -> l.getStartFloorNumber() == 1).findFirst().orElseThrow();
             firstLifting.setTimeNext(TimeHolder.now() + 1);
-            System.out.println("STARTED WAITING LIFT AGAIN");
         }
 
         // move all to lifting stage/lifting queue
@@ -145,6 +140,7 @@ public class TaskExecutionVisitor implements Visitor {
             System.out.println("Lift now in a WAITING state");
             return null;
         }
+        System.out.println("DEFAULT: " + liftingToPrevFloor);
         return liftingToPrevFloor;
     }
 
