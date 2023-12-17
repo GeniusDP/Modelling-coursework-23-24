@@ -19,6 +19,7 @@ import kpi.zaranik.element.observer.IncomeObserver;
 import kpi.zaranik.element.observer.LiftingObserver;
 import kpi.zaranik.element.observer.ProcessedPeopleObserver;
 import kpi.zaranik.element.observer.QueuesObserver;
+import kpi.zaranik.element.observer.RejectionObserver;
 import kpi.zaranik.model.TimeHolder;
 import kpi.zaranik.util.FunRand;
 
@@ -28,6 +29,7 @@ public class TaskExecutionVisitor implements Visitor {
     private final LiftingObserver liftingObserver;
     private final QueuesObserver queuesObserver;
     private final IncomeObserver incomeObserver;
+    private final RejectionObserver rejectionObserver;
     private final List<Lifting> allLiftings;
 
     public TaskExecutionVisitor(
@@ -35,12 +37,13 @@ public class TaskExecutionVisitor implements Visitor {
         ProcessedPeopleObserver processedPeopleObserver,
         LiftingObserver liftingObserver,
         QueuesObserver queuesObserver,
-        IncomeObserver incomeObserver
-    ) {
+        IncomeObserver incomeObserver,
+        RejectionObserver rejectionObserver) {
         this.processedPeopleObserver = processedPeopleObserver;
         this.liftingObserver = liftingObserver;
         this.queuesObserver = queuesObserver;
         this.incomeObserver = incomeObserver;
+        this.rejectionObserver = rejectionObserver;
         this.allLiftings = elements.stream().filter(e -> e instanceof Lifting).map(Lifting.class::cast).toList();
     }
 
@@ -115,12 +118,15 @@ public class TaskExecutionVisitor implements Visitor {
         if (nextLifting != null) {
             int freePlaces = LIFT_CAPACITY - peopleOnBoard.size();
             List<Person> fromQueue = nextLifting.getQueue().stream().limit(freePlaces).toList();
+            rejectionObserver.observeRejectionProbability(nextLifting.getQueue().size(), fromQueue.size());
             nextLifting.getQueue().removeAll(fromQueue);
 
             peopleOnBoard.addAll(fromQueue);
 
             nextLifting.setPeopleOnBoard(peopleOnBoard);
             nextLifting.setTimeNext(TimeHolder.now() + LIFTING_TRAVEL_TIME);
+
+            queuesObserver.observeTimeInQueue(nextLifting, fromQueue);
         }
         lifting.setPeopleOnBoard(new ArrayList<>());
     }

@@ -16,7 +16,7 @@ public class Modeller {
 
     public void simulate() {
         while (TimeHolder.getTime() < totalModellingTime) {
-            System.out.println("New iteration: time now = " + TimeHolder.getTime());
+//            System.out.println("New iteration: time now = " + TimeHolder.getTime());
             /*
                 1. пробежаться по всем элементам и выбрать все с минимальным timeNext
                 2. для всех выбранных вызвать визитор
@@ -33,7 +33,6 @@ public class Modeller {
                 .forEach(element -> element.accept(this.taskExecutorVisitor));
 
         }
-        System.out.println("totalModellingTime = " + totalModellingTime);
     }
 
 }
