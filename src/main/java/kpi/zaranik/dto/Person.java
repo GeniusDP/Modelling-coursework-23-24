@@ -13,6 +13,7 @@ public class Person implements Comparable<Person> {
 
     private int finishWorkOnFloorTime;
     private int destinationFloorNumber;
+    private int timeStandToQueue;
 
     @Override
     public int compareTo(Person person) {

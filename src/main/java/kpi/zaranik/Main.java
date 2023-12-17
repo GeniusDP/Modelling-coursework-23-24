@@ -6,30 +6,34 @@ import kpi.zaranik.element.Element;
 import kpi.zaranik.element.Floor;
 import kpi.zaranik.element.Generator;
 import kpi.zaranik.element.Lifting;
+import kpi.zaranik.element.observer.IncomeObserver;
+import kpi.zaranik.element.observer.LiftingObserver;
 import kpi.zaranik.element.observer.Observer;
 import kpi.zaranik.element.observer.ProcessedPeopleObserver;
+import kpi.zaranik.element.observer.QueuesObserver;
 import kpi.zaranik.element.visitor.TaskExecutionVisitor;
 import kpi.zaranik.model.Modeller;
 
 public class Main {
 
     public static void main(String[] args) {
+
+        int totalModellingTime = 1000_000;
+
         var processedPeopleObserver = new ProcessedPeopleObserver();
+        var liftingObserver = new LiftingObserver(totalModellingTime);
+        var queuesObserver = new QueuesObserver();
+        var incomeObserver = new IncomeObserver();
         List<Observer> observers = new ArrayList<>(
-            List.of(processedPeopleObserver)
+            List.of(incomeObserver, processedPeopleObserver, liftingObserver, queuesObserver)
         );
 
         List<Element> elements = initElements();
-        List<Lifting> liftings = elements.stream().filter(e -> e instanceof Lifting).map(Lifting.class::cast).toList();
-        var visitor = new TaskExecutionVisitor(processedPeopleObserver, liftings);
+        var visitor = new TaskExecutionVisitor(elements, processedPeopleObserver, liftingObserver, queuesObserver, incomeObserver);
 
-
-        int totalModellingTime = 100_000;
         var modeller = new Modeller(totalModellingTime, elements, visitor);
         modeller.simulate();
 
-        Generator generator = elements.stream().filter(e -> e instanceof Generator).map(Generator.class::cast).findFirst().get();
-        System.out.println("Generated: " + generator.count);
         observers.forEach(Observer::printResult);
     }
 

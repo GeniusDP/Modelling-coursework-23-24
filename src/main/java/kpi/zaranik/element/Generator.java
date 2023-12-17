@@ -10,7 +10,6 @@ public class Generator implements Element {
     private int timeNext;
     private boolean personGenerated;
     private final Lifting firstLifting;
-    public int count = 0;
 
     public Generator(Lifting firstLifting) {
         this.firstLifting = firstLifting;

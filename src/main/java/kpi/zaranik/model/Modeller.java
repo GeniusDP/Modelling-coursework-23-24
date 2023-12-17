@@ -15,9 +15,7 @@ public class Modeller {
     private final TaskExecutionVisitor taskExecutorVisitor;
 
     public void simulate() {
-        int cnt = 0;
         while (TimeHolder.getTime() < totalModellingTime) {
-            cnt ++;
             System.out.println("New iteration: time now = " + TimeHolder.getTime());
             /*
                 1. пробежаться по всем элементам и выбрать все с минимальным timeNext
@@ -29,9 +27,6 @@ public class Modeller {
                 .orElseThrow(IllegalStateException::new);
             TimeHolder.setTime(minimalTimeNext);
 
-            if (cnt == 1000) {
-                System.out.println("cnt = " + cnt);
-            }
             // execute tasks for time now
             elements.stream()
                 .filter(element -> element.getTimeNext() == TimeHolder.getTime())
