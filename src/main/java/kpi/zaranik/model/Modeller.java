@@ -16,11 +16,6 @@ public class Modeller {
 
     public void simulate() {
         while (TimeHolder.getTime() < totalModellingTime) {
-//            System.out.println("New iteration: time now = " + TimeHolder.getTime());
-            /*
-                1. пробежаться по всем элементам и выбрать все с минимальным timeNext
-                2. для всех выбранных вызвать визитор
-            */
             int minimalTimeNext = elements.stream()
                 .map(Element::getTimeNext)
                 .min(Comparator.naturalOrder())

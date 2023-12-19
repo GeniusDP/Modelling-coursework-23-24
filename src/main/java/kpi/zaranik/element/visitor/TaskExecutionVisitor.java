@@ -53,6 +53,7 @@ public class TaskExecutionVisitor implements Visitor {
         var newPerson = Person.builder()
             .finishWorkOnFloorTime(INF_TIME)
             .destinationFloorNumber(getNextFloorForPerson(1))
+            .timeStandToQueue(TimeHolder.now())
             .build();
         Lifting firstLifting = generator.getFirstLifting();
         firstLifting.appendQueue(newPerson);
