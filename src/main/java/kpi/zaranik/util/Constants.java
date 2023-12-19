@@ -12,4 +12,8 @@ public class Constants {
 
     public static final int NUMBER_OF_FLOORS = 5;
 
+    public static final int MIN_TIME_ON_FLOOR_MINUTES = 15;
+
+    public static final int MAX_TIME_ON_FLOOR_MINUTES = 120;
+
 }

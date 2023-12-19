@@ -3,6 +3,8 @@ package kpi.zaranik.element.visitor;
 import static kpi.zaranik.util.Constants.INF_TIME;
 import static kpi.zaranik.util.Constants.LIFTING_TRAVEL_TIME;
 import static kpi.zaranik.util.Constants.LIFT_CAPACITY;
+import static kpi.zaranik.util.Constants.MAX_TIME_ON_FLOOR_MINUTES;
+import static kpi.zaranik.util.Constants.MIN_TIME_ON_FLOOR_MINUTES;
 import static kpi.zaranik.util.Constants.NUMBER_OF_FLOORS;
 
 import java.util.ArrayList;
@@ -171,7 +173,7 @@ public class TaskExecutionVisitor implements Visitor {
     }
 
     private int getFinishWorkOnFloorTime() {
-        return TimeHolder.getTime() + FunRand.uniform(15, 120) * 60;
+        return TimeHolder.getTime() + FunRand.uniform(MIN_TIME_ON_FLOOR_MINUTES, MAX_TIME_ON_FLOOR_MINUTES) * 60;
     }
 
     private int getNextFloorForPerson(int currentFloorNumber) {
